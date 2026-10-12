@@ -1,0 +1,351 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>KalBot · Kalshi crypto &amp; sports trading in Telegram</title>
+<meta name="description" content="Trade Kalshi 15-minute crypto and sports from Telegram: opening-bell orders, one-tap open and close, brackets, combos, market-making bots, live tennis and edges vs the sportsbooks.">
+<meta property="og:type" content="website">
+<meta property="og:title" content="KalBot · Lightning in. Lightning out.">
+<meta property="og:description" content="Trade Kalshi 15-minute crypto and sports from Telegram. Your account, your strategy, your caps.">
+<meta property="og:url" content="https://dakotabota.github.io/kalbot/">
+<meta property="og:image" content="https://dakotabota.github.io/kalbot/kalbot-icon-512.png">
+<meta name="twitter:card" content="summary">
+<meta name="theme-color" content="#050806">
+<link rel="icon" type="image/svg+xml" href="kalbot-icon.svg">
+<link rel="icon" type="image/png" sizes="48x48" href="kalbot-icon-48.png">
+<link rel="apple-touch-icon" href="kalbot-icon-512.png">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;900&family=IBM+Plex+Sans:wght@400;500;600&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: terminal-black trading floor. One neon accent (the brand green), a live "tape" of measured
+   latencies as the hero, then a strict two-column rhythm that stacks on phones. Single dark theme by design. */
+:root {
+  color-scheme: dark;
+  --ink: #050806;          /* page */
+  --panel: #0b140d;        /* raised surfaces */
+  --line: #1c3322;         /* hairlines, grid */
+  --text: #e9f3ea;         /* body text */
+  --muted: #8fa894;        /* secondary text */
+  --neon: #39ff14;         /* brand accent */
+  --neon-2: #00e05a;       /* accent gradient end */
+  --warn: #ffb547;         /* "soon" status */
+  --display: "Big Shoulders Display", "Arial Narrow", Impact, sans-serif;
+  --body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--ink); color: var(--text); font-family: var(--body); font-size: 16px; line-height: 1.6; }
+a { color: var(--neon); }
+.wrap { max-width: 1120px; margin: 0 auto; padding-inline: 20px; }
+.grid-bg {
+  background-image: linear-gradient(var(--line) 1px, transparent 1px), linear-gradient(90deg, var(--line) 1px, transparent 1px);
+  background-size: 48px 48px; background-position: -1px -1px;
+}
+header.top {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5;
+  background: color-mix(in srgb, var(--ink) 88%, transparent); backdrop-filter: blur(8px);
+  border-bottom: 1px solid var(--line);
+}
+.top .wrap { display: flex; align-items: center; justify-content: space-between; gap: 16px; padding-block: 12px; }
+.brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: var(--text); }
+.brand svg { width: 38px; height: 38px; }
+.brand b { font-family: var(--display); font-weight: 900; font-size: 30px; letter-spacing: 2px; line-height: 1; }
+.brand b span { color: var(--neon); }
+.btn {
+  display: inline-flex; align-items: center; gap: 10px; font-family: var(--mono); font-weight: 600; font-size: 15px;
+  text-decoration: none; color: var(--ink); background: linear-gradient(90deg, var(--neon), var(--neon-2));
+  padding: 12px 18px; border-radius: 6px; box-shadow: 0 0 24px color-mix(in srgb, var(--neon) 40%, transparent);
+}
+.btn:hover { filter: brightness(1.08); }
+.btn:focus-visible, a:focus-visible { outline: 2px solid var(--text); outline-offset: 3px; }
+.btn.ghost { background: none; color: var(--neon); border: 1px solid var(--neon); box-shadow: none; }
+
+/* hero */
+.hero { padding-block: 64px 56px; border-bottom: 1px solid var(--line); }
+.hero .wrap { display: grid; grid-template-columns: 1.15fr 1fr; gap: 48px; align-items: center; }
+.eyebrow { font-family: var(--mono); font-size: 13px; letter-spacing: 3px; text-transform: uppercase; color: var(--neon); }
+h1 {
+  font-family: var(--display); font-weight: 900; text-transform: uppercase; line-height: 0.92;
+  font-size: clamp(52px, 8vw, 104px); margin: 12px 0 18px; letter-spacing: 1px; text-wrap: balance;
+}
+h1 em { font-style: normal; color: var(--neon); text-shadow: 0 0 28px color-mix(in srgb, var(--neon) 55%, transparent); }
+.lede { color: var(--muted); font-size: 19px; max-width: 34em; margin: 0 0 28px; }
+.cta-row { display: flex; flex-wrap: wrap; gap: 12px; }
+
+/* the tape: real measured shot */
+.tape { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; min-width: 0; }
+.tape-head { display: flex; justify-content: space-between; gap: 12px; padding: 12px 16px; border-bottom: 1px solid var(--line);
+  font-family: var(--mono); font-size: 12px; color: var(--muted); letter-spacing: 1px; text-transform: uppercase; flex-wrap: wrap; }
+.tape-head .dot { color: var(--neon); }
+.tape table { width: 100%; border-collapse: collapse; font-family: var(--mono); font-variant-numeric: tabular-nums; }
+.tape th, .tape td { padding: 10px 16px; text-align: left; font-size: 14px; border-bottom: 1px solid var(--line); }
+.tape th { color: var(--muted); font-weight: 400; font-size: 12px; letter-spacing: 1px; text-transform: uppercase; }
+.tape td.n { color: var(--neon); text-align: right; }
+.tape th.n { text-align: right; }
+.bar { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; min-width: 60px; }
+.bar i { display: block; height: 100%; background: linear-gradient(90deg, var(--neon), var(--neon-2)); }
+.tape-foot { padding: 12px 16px; font-size: 12px; color: var(--muted); font-family: var(--mono); }
+
+/* speed numbers */
+section { padding-block: 72px; border-bottom: 1px solid var(--line); }
+h2 { font-family: var(--display); font-weight: 900; text-transform: uppercase; font-size: clamp(38px, 5vw, 60px);
+  line-height: 0.95; margin: 8px 0 14px; letter-spacing: 1px; text-wrap: balance; }
+.sub { color: var(--muted); max-width: 40em; margin: 0 0 36px; }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--line); border: 1px solid var(--line); }
+.stat { background: var(--ink); padding: 28px 24px; min-width: 0; }
+.stat .big { font-family: var(--display); font-weight: 900; font-size: clamp(54px, 6vw, 76px); line-height: 1; color: var(--neon); }
+.stat .big small { font-size: 0.42em; color: var(--text); margin-left: 4px; }
+.stat .what { font-weight: 600; margin-top: 10px; }
+.stat .how { color: var(--muted); font-size: 14px; margin-top: 4px; }
+.fine { font-size: 13px; color: var(--muted); margin-top: 18px; max-width: 60em; }
+
+/* steps */
+.steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+.step { border-top: 2px solid var(--neon); padding-top: 18px; min-width: 0; }
+.step .k { font-family: var(--mono); color: var(--neon); font-size: 13px; letter-spacing: 2px; }
+.step h3 { font-family: var(--display); font-weight: 700; text-transform: uppercase; font-size: 30px; margin: 6px 0 8px; line-height: 1; }
+.step p { color: var(--muted); margin: 0; }
+code, kbd { font-family: var(--mono); font-size: 0.92em; color: var(--text); background: var(--panel); border: 1px solid var(--line);
+  padding: 1px 6px; border-radius: 4px; }
+
+/* strategies */
+.strats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 22px; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+.card.live { border-color: color-mix(in srgb, var(--neon) 45%, var(--line)); }
+.chip { align-self: flex-start; font-family: var(--mono); font-size: 11px; letter-spacing: 2px; text-transform: uppercase;
+  padding: 3px 8px; border-radius: 3px; border: 1px solid currentColor; }
+.chip.live { color: var(--neon); }
+.chip.soon { color: var(--warn); }
+.card h3 { font-family: var(--display); font-weight: 900; text-transform: uppercase; font-size: 32px; line-height: 1; margin: 0; }
+.card p { margin: 0; color: var(--muted); }
+.card .cmd { margin-top: auto; font-family: var(--mono); font-size: 13px; color: var(--text); overflow-x: auto; white-space: nowrap; padding-top: 8px; border-top: 1px dashed var(--line); }
+
+/* commands */
+.term { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; overflow-x: auto; }
+.term pre { margin: 0; padding: 22px; font-family: var(--mono); font-size: 14px; line-height: 1.9; color: var(--text); }
+.term .c { color: var(--neon); }
+.term .m { color: var(--muted); }
+
+/* security + pricing */
+.two { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+.two > div { min-width: 0; }
+ul.ticks { list-style: none; padding: 0; margin: 0; display: grid; gap: 14px; }
+ul.ticks li { padding-left: 30px; position: relative; }
+ul.ticks li::before { content: ""; position: absolute; left: 0; top: 0.45em; width: 14px; height: 14px; border-radius: 3px;
+  background: linear-gradient(135deg, var(--neon), var(--neon-2)); }
+ul.ticks b { color: var(--text); }
+.price { background: var(--panel); border: 1px solid color-mix(in srgb, var(--neon) 45%, var(--line)); border-radius: 10px; padding: 28px; }
+.price .amt { font-family: var(--display); font-weight: 900; font-size: 80px; line-height: 1; color: var(--neon); }
+.price .amt small { font-size: 0.3em; color: var(--muted); letter-spacing: 2px; }
+
+footer { padding-block: 40px 56px; color: var(--muted); font-size: 13px; }
+footer .wrap { display: grid; gap: 12px; }
+footer p { margin: 0; max-width: 70em; }
+
+@media (max-width: 860px) {
+  .hero .wrap, .two { grid-template-columns: 1fr; }
+  .stats, .steps, .strats { grid-template-columns: 1fr; }
+  .hero { padding-block: 40px; }
+  section { padding-block: 52px; }
+}
+@media (max-width: 420px) { .top .btn { padding: 10px 12px; font-size: 13px; } .brand b { font-size: 26px; } }
+@media (prefers-reduced-motion: no-preference) {
+  .bar i { animation: fill 900ms cubic-bezier(.2,.8,.2,1) both; }
+  @keyframes fill { from { width: 0; } }
+}
+</style>
+</head>
+<body>
+
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <linearGradient id="kbBg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0d1a10"/><stop offset="1" stop-color="#050806"/></linearGradient>
+    <linearGradient id="kbG" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7CFF4F"/><stop offset="1" stop-color="#00E05A"/></linearGradient>
+    <symbol id="kbIcon" viewBox="0 0 512 512">
+      <rect width="512" height="512" rx="112" fill="url(#kbBg)"/>
+      <g stroke="#1f3a24" stroke-width="2" opacity="0.7"><path d="M64 160H448M64 256H448M64 352H448M160 64V448M256 64V448M352 64V448"/></g>
+      <path d="M256 128V84" stroke="#39FF14" stroke-width="12" stroke-linecap="round"/>
+      <path d="M262 30 L232 74 H254 L244 108 L282 58 H258 Z" fill="url(#kbG)"/>
+      <rect x="104" y="128" width="304" height="268" rx="64" fill="none" stroke="#39FF14" stroke-width="30" opacity="0.18"/>
+      <rect x="104" y="128" width="304" height="268" rx="64" fill="#07120a" stroke="url(#kbG)" stroke-width="14"/>
+      <rect x="74" y="222" width="30" height="80" rx="12" fill="url(#kbG)"/><rect x="408" y="222" width="30" height="80" rx="12" fill="url(#kbG)"/>
+      <path d="M196 196 L238 260 H154 Z" fill="url(#kbG)"/><path d="M316 260 L274 196 H358 Z" fill="#ffffff"/>
+      <g fill="url(#kbG)">
+        <rect x="183" y="300" width="22" height="58" rx="5"/><rect x="192" y="290" width="4" height="78" rx="2"/>
+        <rect x="245" y="312" width="22" height="40" rx="5"/><rect x="254" y="300" width="4" height="66" rx="2"/>
+        <rect x="307" y="294" width="22" height="66" rx="5"/><rect x="316" y="284" width="4" height="86" rx="2"/>
+      </g>
+    </symbol>
+  </defs>
+</svg>
+
+<header class="top">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="KalBot home"><svg role="img" aria-hidden="true"><use href="#kbIcon"/></svg><b>KAL<span>BOT</span></b></a>
+    <a class="btn" href="https://t.me/kalshtraderbot" target="_blank" rel="noopener">Open in Telegram →</a>
+  </div>
+</header>
+
+<main id="top">
+  <div class="hero grid-bg">
+    <div class="wrap">
+      <div>
+        <div class="eyebrow">Kalshi crypto &amp; sports · Telegram</div>
+        <h1>Lightning in.<br><em>Lightning out.</em></h1>
+        <p class="lede">Open and close Kalshi 15-minute BTC, ETH, SOL, XRP and HYPE trades straight from Telegram. Arm an order and it fires the instant the window opens. Type <code>/close</code> and your position is sold at the best bid in one shot.</p>
+        <div class="cta-row">
+          <a class="btn" href="https://t.me/kalshtraderbot" target="_blank" rel="noopener">Start @kalshtraderbot</a>
+          <a class="btn ghost" href="#speed">See the numbers</a>
+        </div>
+      </div>
+      <div class="tape" aria-label="Measured opening-bell shot">
+        <div class="tape-head"><span><span class="dot">●</span> Opening-bell shot</span><span>2026-10-12 · 04:30:00 UTC</span></div>
+        <table>
+          <thead><tr><th>Market</th><th class="n">Left server</th><th>Bell → send</th></tr></thead>
+          <tbody>
+            <tr><td>ETH 15M</td><td class="n">+0.1 ms</td><td><div class="bar"><i style="width:2%"></i></div></td></tr>
+            <tr><td>XRP 15M</td><td class="n">+3.6 ms</td><td><div class="bar"><i style="width:55%"></i></div></td></tr>
+            <tr><td>BTC 15M</td><td class="n">+4.5 ms</td><td><div class="bar"><i style="width:69%"></i></div></td></tr>
+            <tr><td>SOL 15M</td><td class="n">+5.2 ms</td><td><div class="bar"><i style="width:80%"></i></div></td></tr>
+          </tbody>
+        </table>
+        <div class="tape-foot">32 orders across 4 markets, one shot. Measured on our engine's log at a live Kalshi open.</div>
+      </div>
+    </div>
+  </div>
+
+  <section id="speed">
+    <div class="wrap">
+      <div class="eyebrow">Speed, measured</div>
+      <h2>Milliseconds,<br>not seconds.</h2>
+      <p class="sub">Every number here comes from live orders on Kalshi, timed on our server and by Kalshi's own order timestamps. No estimates.</p>
+      <div class="stats">
+        <div class="stat"><div class="big">0.1–7<small>ms</small></div><div class="what">Bell to send</div><div class="how">From the window opening to our order leaving the server, across BTC, ETH, SOL and XRP.</div></div>
+        <div class="stat"><div class="big">17–47<small>ms</small></div><div class="what">Bell to live on Kalshi</div><div class="how">From the window opening to the order resting in Kalshi's book, per Kalshi's created time.</div></div>
+        <div class="stat"><div class="big">32<small>orders</small></div><div class="what">One shot, four markets</div><div class="how">Each market's batch rides its own pre-warmed connection, signed before the bell and released together.</div></div>
+      </div>
+      <p class="fine">Measured from our Chicago server on 2026-10-11 and 2026-10-12. KalBot is not co-located with Kalshi; Kalshi's own processing time varies by request. Orders you type in Telegram also include Telegram's delivery time. Opening-bell orders are armed in advance, so they don't wait on Telegram.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="eyebrow">How it works</div>
+      <h2>Three steps.</h2>
+      <div class="steps">
+        <div class="step"><div class="k">CONNECT</div><h3>Link your key</h3><p>Make a Kalshi API key just for KalBot and send it with <code>/connect</code>. KalBot deletes the messages, checks the key, and stores it encrypted.</p></div>
+        <div class="step"><div class="k">ARM</div><h3>Set the order</h3><p><code>/limit BTC yes 40 5</code> trades now. Add <code>next</code> and it fires at the next opening bell.</p></div>
+        <div class="step"><div class="k">EXIT</div><h3>Get out fast</h3><p><code>/close BTC</code> sells it all at the best bid now, or <code>/sell</code> at your price. Set your own caps if you want them; KalBot imposes none.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="strategies">
+    <div class="wrap">
+      <div class="eyebrow">Strategies</div>
+      <h2>Pick your play.</h2>
+      <p class="sub">Live tools work today. The rest are in testing and ship when they pass on real data.</p>
+      <div class="strats">
+        <div class="card live"><span class="chip live">Live</span><h3>Opening bell</h3><p>Arm a limit order for the next 15-minute window. It goes out the moment the window opens, at your price or better.</p><div class="cmd">/limit ETH no 45 4 next</div></div>
+        <div class="card live"><span class="chip live">Live</span><h3>Limit in, limit out</h3><p>Buy YES or NO at your price now, and set a limit sell on what you hold. Sells can only shrink your position, never flip it.</p><div class="cmd">/limit BTC yes 40 5 · /sell BTC yes 55 5</div></div>
+        <div class="card live"><span class="chip live">Live</span><h3>Lightning open &amp; close</h3><p>Buy at the best ask or sell at the best bid with one command, on a coin, a game, or every position you hold. Filled immediately or not at all, with the round-trip time reported back.</p><div class="cmd">/open BTC yes 5 · /close all</div></div>
+        <div class="card live"><span class="chip live">Live</span><h3>Lock</h3><p>Every position gets a take-profit sell, 2x under 15¢ or +15¢ by default, or your own target. 15-minute crypto is sold at the bid with two minutes left.</p><div class="cmd">/lock on · /lock on 10 · /lock on 3x</div></div>
+        <div class="card live"><span class="chip live">Live</span><h3>Build your market maker</h3><p>Run as many bots as you like, on crypto or any game. Every setting adjusts live: spread, size, inventory cap, skew, price band, take-profit, exit timing and a max-loss stop. Quotes are post-only.</p><div class="cmd">/mm new SOL spread 3 size 2 tp 4 maxloss 5</div></div>
+        <div class="card"><span class="chip soon">Soon</span><h3>Coin Race board</h3><p>Live odds for which of BTC, ETH, SOL, XRP and HYPE posts the highest 15-minute return.</p><div class="cmd">/race</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="sports">
+    <div class="wrap">
+      <div class="eyebrow">Sports</div>
+      <h2>Every game.<br>One command.</h2>
+      <p class="sub">NFL, college football, ATP and WTA tennis, cricket and UFC. List the board, then ladder limit orders across as many games as you want, or build a combo.</p>
+      <div class="strats">
+        <div class="card live"><span class="chip live">Live</span><h3>Game board</h3><p>Every open game for a sport with both sides' prices, numbered for quick picks.</p><div class="cmd">/games nfl · ncaaf · tennis · cricket · ufc</div></div>
+        <div class="card live"><span class="chip live">Live</span><h3>Multi-game brackets</h3><p>A ladder of limit buys, like 30 to 45¢ every 5¢, on the favorite, the underdog or a named team, across one game or the whole slate.</p><div class="cmd">/bracket all dog 30-45 step 5 qty 2</div></div>
+        <div class="card live"><span class="chip live">Live</span><h3>Combos</h3><p>Pick winners, spreads and totals across games, and KalBot creates the Kalshi combo market and places your limit order on it.</p><div class="cmd">/combo 1:GB L4 L9 price 15 qty 2</div></div>
+      </div>
+      <p class="fine">Every rung is checked against your per-order cap, and a bracket that would push your total exposure past your cap is refused before anything is sent. Combo markets often have no resting sellers, so a combo order rests until someone takes it.</p>
+      <div class="strats" style="margin-top:28px">
+        <div class="card live"><span class="chip live">Live</span><h3>Edges</h3><p>Every Kalshi game price next to the sportsbook consensus, with the books' margin stripped out and Kalshi's fee counted. Sides priced below the books float to the top.</p><div class="cmd">/edges nfl · /edges tennis</div></div>
+        <div class="card live"><span class="chip live">Live</span><h3>Favorable long shots</h3><p>Underdogs at 30¢ or less on Kalshi that the books rate higher, across every sport in one list. Turn on alerts and new ones are pushed to you as they appear.</p><div class="cmd">/longshots all · /alerts on longshots</div></div>
+        <div class="card live"><span class="chip live">Live</span><h3>Team records</h3><p>Season, home and road records for NFL and college football teams, straight from the public league feed.</p><div class="cmd">/stats nfl GB</div></div>
+      </div>
+      <div class="strats" style="margin-top:28px">
+        <div class="card live"><span class="chip live">Live</span><h3>Live tennis</h3><p>Every live ATP and WTA singles match: set and game score, who is serving, aces, breaks and serve stats, next to the Kalshi price.</p><div class="cmd">/live · /live 3</div></div>
+        <div class="card live"><span class="chip live">Live</span><h3>Follow a match</h3><p>Get a message the moment there is a break of serve, a set ends or the match is won. Buying into a match follows it for you.</p><div class="cmd">/follow 3 · /follow off</div></div>
+        <div class="card live"><span class="chip live">Live</span><h3>Form, H2H &amp; draws</h3><p>Ranking, season record by surface, last ten results and head-to-head for any matchup, plus the live tournament draw with Kalshi markets marked.</p><div class="cmd">/stats tennis 3 · /draw shanghai</div></div>
+      </div>
+      <p class="fine">An edge is a price disagreement with the sportsbooks, not a guaranteed win. Every edge KalBot flags is logged.</p>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap">
+      <div class="eyebrow">Commands</div>
+      <h2>Everything from the chat.</h2>
+      <div class="term"><pre><span class="c">/connect</span>                          <span class="m">link your Kalshi API key (encrypted)</span>
+<span class="c">/limit BTC yes 40 5</span>               <span class="m">buy 5 YES at 40¢ now</span>
+<span class="c">/limit SOL no 30 2 next</span>           <span class="m">buy 2 NO at 30¢, fired at the next opening bell</span>
+<span class="c">/open BTC yes 5</span>   <span class="c">/open 3 GB 5</span>   <span class="m">buy now at the best ask: crypto, or a team from /games</span>
+<span class="c">/close BTC</span>   <span class="c">/close 3</span>   <span class="c">/close all</span>   <span class="m">sell now at the best bid: one coin, one game, or everything</span>
+<span class="c">/sell BTC yes 55 5</span>                <span class="m">limit sell 5 YES you hold at 55¢</span>
+<span class="c">/lock on</span>   <span class="c">/lock on 10</span>   <span class="c">/lock off</span>   <span class="m">auto take-profit on every position, exit before the close</span>
+<span class="c">/mm new BTC spread 2 size 2</span>       <span class="m">start a market-making bot (also /mm new 3 GB for a game)</span>
+<span class="c">/mm set 1 band 20-80</span>              <span class="m">adjust any setting live: spread size maxinv skew minspread band start stop tp exit maxloss every</span>
+<span class="c">/mm list</span>   <span class="c">/mm stop 1 flat</span>   <span class="c">/mm start 1</span>   <span class="m">see, pause (and sell out), or resume bots</span>
+<span class="c">/orders</span>   <span class="c">/cancel 1</span>   <span class="c">/cancel all</span>  <span class="m">see and pull resting orders</span>
+<span class="c">/positions</span>   <span class="c">/balance</span>   <span class="c">/board</span>   <span class="m">account and live prices</span>
+<span class="c">/games nfl</span>                        <span class="m">numbered board: nfl, ncaaf, tennis, cricket, ufc</span>
+<span class="c">/bracket all fav 50-60 step 5 qty 2</span> <span class="m">limit ladder on every listed game</span>
+<span class="c">/combo 1:GB 2:SF price 20 qty 3</span>   <span class="m">combo of winners, limit buy at 20¢</span>
+<span class="c">/lines 3</span>   <span class="c">/line L4 yes 40 5</span>      <span class="m">football spreads &amp; totals for a game, and trade one</span>
+<span class="c">/combo 1:GB L4 L9 price 15 qty 2</span>  <span class="m">mix a winner, a spread and a total in one combo</span>
+<span class="c">/live</span>   <span class="c">/follow 3</span>   <span class="c">/draw shanghai</span>   <span class="m">live tennis scores &amp; stats, push updates, tournament draws</span>
+<span class="c">/edges nfl</span>   <span class="c">/longshots all</span>   <span class="c">/stats nfl GB</span>   <span class="m">Kalshi vs sportsbook odds, cheap underdogs, team records</span>
+<span class="c">/alerts on nfl,ufc 4 longshots</span>    <span class="m">get new edges pushed to you as they appear</span>
+<span class="c">/caps 50 500</span>                      <span class="m">your own $ per order, $ total (or off)</span>
+<span class="c">/disconnect</span>                       <span class="m">delete your key from KalBot</span></pre></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="wrap two">
+      <div>
+        <div class="eyebrow">Your keys, locked down</div>
+        <h2>Built to hold<br>trading keys.</h2>
+        <ul class="ticks">
+          <li><b>Encrypted at rest.</b> Keys are stored only in encrypted form, with the decryption key kept in a root-only file on the server.</li>
+          <li><b>Deleted from the chat.</b> The messages carrying your key are removed the moment KalBot receives them.</li>
+          <li><b>Checked before saving.</b> A key Kalshi rejects is never stored.</li>
+          <li><b>Yours to revoke.</b> Use a key made only for KalBot. Revoke it in Kalshi any time, and <code>/disconnect</code> deletes it here.</li>
+          <li><b>Your commands only.</b> KalBot never trades on its own; it places the orders you set, inside your caps.</li>
+        </ul>
+      </div>
+      <div>
+        <div class="eyebrow">Pricing</div>
+        <h2>Beta access.</h2>
+        <div class="price">
+          <div class="amt">$0 <small>DURING BETA</small></div>
+          <p>Full access to every tool while KalBot is in beta. After beta, KalBot Pro is 500 Telegram Stars per 30 days, renewing monthly and cancelable any time in Telegram. Viewing your account, cancelling orders and closing positions always stay free.</p>
+          <a class="btn" href="https://t.me/kalshtraderbot" target="_blank" rel="noopener">Start @kalshtraderbot</a>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <p><b>Risk.</b> Event-contract trading can lose all the money you put in. KalBot places the orders you command and, once you switch them on, the automated orders of Lock and your market-making bots, inside the settings you choose. KalBot is not investment advice and does not promise any profit. Past speed measurements do not guarantee future fills.</p>
+    <p>KalBot is an independent tool and is not affiliated with, endorsed by, or sponsored by Kalshi. Kalshi is a trademark of its owner.</p>
+    <p>© 2026 KalBot · Telegram: @kalshtraderbot</p>
+  </div>
+</footer>
+</body>
+</html>
