@@ -53,9 +53,11 @@ button.b:active { transform: scale(0.98); }
 <div id="outside" class="card"><b>Open this from Telegram.</b><p class="help">In the KalBot chat, type /connect and tap “🔐 Connect Kalshi”.</p></div>
 
 <div class="card">
-  <div class="step"><span class="num">1</span><span>Create an API key on Kalshi</span></div>
-  <p class="help">On kalshi.com: Account → API keys → Create key. Kalshi shows a <b>Key ID</b> and gives you a <b>private key</b> file (it lands in your Downloads / Files).</p>
-  <div class="row"><button class="b" id="openKalshi" type="button">Open kalshi.com ↗</button></div>
+  <div class="step"><span class="num">1</span><span>Create a key on Kalshi</span></div>
+  <p class="help">Tap below, sign in, and under <b>API Keys</b> tap <b>Create New API Key</b>. Copy the <b>Key ID</b>, come back here, and it fills in by itself. Then copy the <b>private key</b> (Kalshi shows it only once) and come back again.</p>
+  <div class="row"><button class="b primary" id="openKalshi" type="button">Create key on Kalshi ↗</button></div>
+  <div class="row"><button class="b" id="smartPaste" type="button">📋 Paste from Kalshi</button></div>
+  <div class="status" id="clipStatus"></div>
 </div>
 
 <div class="card">
@@ -141,6 +143,24 @@ button.b:active { transform: scale(0.98); }
     tg.sendData(data);                                // closes the form; the bot replies in the chat
   }
 
+  // Sort whatever was copied on Kalshi into the right box: a private key, or a Key ID (UUID).
+  const UUID = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i;
+  let lastClip = "";
+  function sortClip(v) {
+    if (!v || v === lastClip) return false;
+    lastClip = v;
+    if (/PRIVATE KEY/.test(v)) { $("key").value = v.trim(); update(); flash("✓ Private key filled in from what you copied"); return true; }
+    const m = UUID.exec(v);
+    if (m && m[0] !== $("kid").value.trim()) { $("kid").value = m[0]; update(); flash("✓ Key ID filled in from what you copied"); return true; }
+    return false;
+  }
+  function flash(msg) { const c = $("clipStatus"); c.textContent = msg; c.className = "status ok"; }
+  async function autoClip() {                         // best effort: some phones only allow this after a tap
+    try { sortClip(await navigator.clipboard.readText()); } catch (e) {}
+  }
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") autoClip(); });
+  window.addEventListener("focus", autoClip);
+
   async function pasteInto(id) {
     try {
       const v = await navigator.clipboard.readText();
@@ -151,6 +171,12 @@ button.b:active { transform: scale(0.98); }
 
   $("kid").addEventListener("input", update);
   $("key").addEventListener("input", update);
+  $("smartPaste").addEventListener("click", async () => {
+    try {
+      const v = await navigator.clipboard.readText();
+      if (!sortClip(v) && v) { const c = $("clipStatus"); c.textContent = "What you copied isn't a Key ID or a private key."; c.className = "status bad"; }
+    } catch (e) { const c = $("clipStatus"); c.textContent = "Your phone blocked pasting here. Long-press a box below and tap Paste."; c.className = "status bad"; }
+  });
   $("pasteKid").addEventListener("click", () => pasteInto("kid"));
   $("pasteKey").addEventListener("click", () => pasteInto("key"));
   $("pickFile").addEventListener("click", () => $("file").click());
@@ -163,7 +189,7 @@ button.b:active { transform: scale(0.98); }
     r.readAsText(f);
   });
   $("openKalshi").addEventListener("click", () => {
-    const url = "https://kalshi.com/account/profile";
+    const url = "https://kalshi.com/account/profile";                    // Kalshi docs: Profile Settings → API Keys
     if (tg && tg.openLink) tg.openLink(url); else window.open(url, "_blank", "noopener");
   });
   $("fallback").addEventListener("click", send);
