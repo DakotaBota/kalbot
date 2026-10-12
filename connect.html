@@ -81,6 +81,7 @@ button.b:active { transform: scale(0.98); }
   <div class="status" id="keyStatus"></div>
 </div>
 
+<p class="note" style="opacity:.6">Form v4</p>
 <p class="note">Your key goes straight to the KalBot chat through Telegram, where it is checked with Kalshi and stored encrypted. It never appears in the chat, and this page saves nothing.</p>
 
 <button class="b primary" id="fallback" type="button">Connect securely</button>
@@ -88,8 +89,11 @@ button.b:active { transform: scale(0.98); }
 <script>
 (function () {
   const tg = window.Telegram && window.Telegram.WebApp;
-  // initData is EMPTY for keyboard-button mini apps (Telegram docs), so detect Telegram by its platform instead.
-  const inTelegram = !!(tg && typeof tg.sendData === "function" && tg.platform && tg.platform !== "unknown");
+  // initData is EMPTY for keyboard-button mini apps (Telegram docs). Telegram always passes tgWebAppVersion /
+  // tgWebAppPlatform in the URL hash, and exposes sendData; any of those means we are inside Telegram.
+  const hash = location.hash || "";
+  const inTelegram = !!(tg && typeof tg.sendData === "function" &&
+    ((tg.platform && tg.platform !== "unknown") || /tgWebApp(Version|Platform|Data)=/.test(hash) || window.TelegramWebviewProxy));
   const $ = (id) => document.getElementById(id);
   let parsed = null;                                  // {t: label, p: base64 body}
 
@@ -147,7 +151,14 @@ button.b:active { transform: scale(0.98); }
       $("keyStatus").className = "status bad";
       return;
     }
-    tg.sendData(data);                                // closes the form; the bot replies in the chat
+    try {
+      tg.sendData(data);                              // closes the form; the bot replies in the chat
+    } catch (e) {}
+    setTimeout(() => {                                // still open = Telegram refused (not opened from the chat button)
+      const st = $("keyStatus");
+      st.textContent = "Telegram didn't send it. Close this, type /connect in the KalBot chat, and open the form from the 🔐 Connect Kalshi button.";
+      st.className = "status bad";
+    }, 1500);
   }
 
   // Sort whatever was copied on Kalshi into the right box: a private key, or a Key ID (UUID).
