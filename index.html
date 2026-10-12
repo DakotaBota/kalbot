@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>KalBot · Kalshi crypto &amp; sports trading in Telegram</title>
-<meta name="description" content="Trade Kalshi 15-minute crypto and sports from Telegram: opening-bell orders, one-tap open and close, brackets, combos, market-making bots, live tennis and edges vs the sportsbooks.">
+<meta name="description" content="Trade Kalshi crypto and sports from Telegram: top picks vs the sportsbooks, ultimate 2-12 leg combos, live tennis, opening-bell orders, one-tap open and close, market-making bots.">
 <meta property="og:type" content="website">
 <meta property="og:title" content="KalBot · Lightning in. Lightning out.">
 <meta property="og:description" content="Trade Kalshi 15-minute crypto and sports from Telegram. Your account, your strategy, your caps.">
@@ -237,7 +237,7 @@ footer p { margin: 0; max-width: 70em; }
       <div class="eyebrow">How it works</div>
       <h2>Three steps.</h2>
       <div class="steps">
-        <div class="step"><div class="k">CONNECT</div><h3>Link your key</h3><p>Make a Kalshi API key just for KalBot and send it with <code>/connect</code>. KalBot deletes the messages, checks the key, and stores it encrypted.</p></div>
+        <div class="step"><div class="k">CONNECT</div><h3>Link your key</h3><p>Type <code>/connect</code> and tap <b>Connect Kalshi</b>. A form opens in Telegram, takes you to Kalshi to make a key, and fills itself in from what you copy. The key is checked with Kalshi and stored encrypted, and never shows in the chat.</p></div>
         <div class="step"><div class="k">ARM</div><h3>Set the order</h3><p><code>/limit BTC yes 40 5</code> trades now. Add <code>next</code> and it fires at the next opening bell.</p></div>
         <div class="step"><div class="k">EXIT</div><h3>Get out fast</h3><p><code>/close BTC</code> sells it all at the best bid now, or <code>/sell</code> at your price. Set your own caps if you want them; KalBot imposes none.</p></div>
       </div>
@@ -256,6 +256,19 @@ footer p { margin: 0; max-width: 70em; }
         <div class="card live"><span class="chip live">Live</span><h3>Lock</h3><p>Every position gets a take-profit sell, 2x under 15¢ or +15¢ by default, or your own target. 15-minute crypto is sold at the bid with two minutes left.</p><div class="cmd">/lock on · /lock on 10 · /lock on 3x</div></div>
         <div class="card live"><span class="chip live">Live</span><h3>Build your market maker</h3><p>Run as many bots as you like, on crypto or any game. Every setting adjusts live: spread, size, inventory cap, skew, price band, take-profit, exit timing and a max-loss stop. Quotes are post-only.</p><div class="cmd">/mm new SOL spread 3 size 2 tp 4 maxloss 5</div></div>
         <div class="card"><span class="chip soon">Soon</span><h3>Coin Race board</h3><p>Live odds for which of BTC, ETH, SOL, XRP and HYPE posts the highest 15-minute return.</p><div class="cmd">/race</div></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="picks">
+    <div class="wrap">
+      <div class="eyebrow">Picks &amp; combos</div>
+      <h2>The best prices.<br>Built into parlays.</h2>
+      <p class="sub">KalBot compares every Kalshi game price with the sportsbooks' fair price, upcoming and live, and does the parlay math for you.</p>
+      <div class="strats">
+        <div class="card live"><span class="chip live">Live</span><h3>Top picks</h3><p>The top 8 sides in football, tennis and UFC right now, ranked by how far Kalshi sits below the books' fair price after fees. Live tennis uses in-play odds. Every pick is numbered, so one command buys it.</p><div class="cmd">/picks · /picks tennis · /open 9 BEJ 5</div></div>
+        <div class="card live"><span class="chip live">Live</span><h3>Ultimate combos</h3><p>Ready-made 2, 3, 4, 5, 6, 8, 10 and 12-leg parlays across football, tennis and UFC, from the most likely winners Kalshi isn't overpricing. Each shows its chance to hit, fair price and payout, with the command ready to copy.</p><div class="cmd">/combos</div></div>
+        <div class="card live"><span class="chip live">Live</span><h3>Your call</h3><p>Combo orders go in as limit buys just under the fair price, so you never pay over the odds. You choose what to place, how much, and your own caps.</p><div class="cmd">/combo 1:LAR 2:KC price 62 qty 1</div></div>
       </div>
     </div>
   </section>
@@ -306,6 +319,7 @@ footer p { margin: 0; max-width: 70em; }
 <span class="c">/combo 1:GB 2:SF price 20 qty 3</span>   <span class="m">combo of winners, limit buy at 20¢</span>
 <span class="c">/lines 3</span>   <span class="c">/line L4 yes 40 5</span>      <span class="m">football spreads &amp; totals for a game, and trade one</span>
 <span class="c">/combo 1:GB L4 L9 price 15 qty 2</span>  <span class="m">mix a winner, a spread and a total in one combo</span>
+<span class="c">/picks</span>   <span class="c">/combos</span>                <span class="m">top 8 per sport, upcoming &amp; live · ultimate 2-12 leg parlays</span>
 <span class="c">/live</span>   <span class="c">/follow 3</span>   <span class="c">/draw shanghai</span>   <span class="m">live tennis scores &amp; stats, push updates, tournament draws</span>
 <span class="c">/edges nfl</span>   <span class="c">/longshots all</span>   <span class="c">/stats nfl GB</span>   <span class="m">Kalshi vs sportsbook odds, cheap underdogs, team records</span>
 <span class="c">/alerts on nfl,ufc 4 longshots</span>    <span class="m">get new edges pushed to you as they appear</span>
