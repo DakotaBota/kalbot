@@ -22,7 +22,7 @@
 }
 * { box-sizing: border-box; }
 body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.5 -apple-system, "Segoe UI", Roboto, system-ui, sans-serif;
-  padding: 16px 16px 96px; }
+  padding: 16px 16px 32px; }
 h1 { font-size: 22px; margin: 4px 0 2px; }
 .sub { color: var(--muted); margin: 0 0 16px; font-size: 14px; }
 .card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px; margin-bottom: 14px; }
@@ -42,9 +42,8 @@ button.b:active { transform: scale(0.98); }
 .status { font-size: 14px; margin-top: 8px; min-height: 21px; }
 .status.ok { color: var(--ok); } .status.bad { color: var(--bad); }
 .note { color: var(--muted); font-size: 13px; }
-#fallback { display: block; position: fixed; left: 16px; right: 16px; bottom: calc(16px + env(safe-area-inset-bottom, 0px));
-  min-height: 54px; font-size: 17px; box-shadow: 0 6px 24px rgba(0,0,0,.45); }
-#fallback:disabled { background: var(--card); color: var(--muted); border-color: var(--line); box-shadow: none; }
+button.b.big { width: 100%; min-height: 58px; font-size: 18px; }
+button.b.big:disabled { background: var(--card); color: var(--muted); border-color: var(--line); }
 #outside { display: none; }
 </style>
 </head>
@@ -81,10 +80,15 @@ button.b:active { transform: scale(0.98); }
   <div class="status" id="keyStatus"></div>
 </div>
 
-<p class="note" style="opacity:.6">Form v4</p>
+<div class="card">
+  <div class="step"><span class="num">4</span><span>Connect</span></div>
+  <button class="b primary big" id="connectBtn" type="button">🔐 Connect</button>
+  <div class="status" id="sendStatus"></div>
+</div>
+
+<p class="note" style="opacity:.6">Form v5</p>
 <p class="note">Your key goes straight to the KalBot chat through Telegram, where it is checked with Kalshi and stored encrypted. It never appears in the chat, and this page saves nothing.</p>
 
-<button class="b primary" id="fallback" type="button">Connect securely</button>
 
 <script>
 (function () {
@@ -130,21 +134,26 @@ button.b:active { transform: scale(0.98); }
       if (r.err) { st.textContent = r.err; st.className = "status bad"; }
       else { parsed = r; st.textContent = "✓ Private key looks complete"; st.className = "status ok"; }
     }
-    const ready = validKid(kid) && parsed && inTelegram;
+    const ready = validKid(kid) && !!parsed;
     if (tg && tg.MainButton) {
       tg.MainButton.setText("Connect securely");
       if (ready) { tg.MainButton.show(); tg.MainButton.enable(); } else { tg.MainButton.hide(); }
     }
-    const fb = $("fallback");
-    fb.disabled = !ready;
-    fb.textContent = ready ? "🔐 Connect securely" :
-      !inTelegram ? "Open this from the KalBot chat" :
-      !validKid(kid) ? "Add your Key ID to continue" : "Add your private key to continue";
+    const cb = $("connectBtn");
+    cb.disabled = !ready;
+    cb.textContent = ready ? "🔐 Connect" : !validKid(kid) ? "Add your Key ID above" : "Add your private key above";
   }
 
   function send() {
     const kid = $("kid").value.trim();
-    if (!validKid(kid) || !parsed || !inTelegram) return;
+    const ss = $("sendStatus");
+    if (!validKid(kid) || !parsed) return;
+    if (!tg || typeof tg.sendData !== "function") {
+      ss.textContent = "Open this form from the 🔐 Connect Kalshi button in the KalBot chat (/connect), then tap Connect.";
+      ss.className = "status bad";
+      return;
+    }
+    ss.textContent = "Sending…"; ss.className = "status";
     const data = JSON.stringify({ k: kid, p: parsed.p, t: parsed.t });
     if (new Blob([data]).size > 4096) {
       $("keyStatus").textContent = "This key is too large to send from here. Send the key file in the chat instead.";
@@ -155,9 +164,8 @@ button.b:active { transform: scale(0.98); }
       tg.sendData(data);                              // closes the form; the bot replies in the chat
     } catch (e) {}
     setTimeout(() => {                                // still open = Telegram refused (not opened from the chat button)
-      const st = $("keyStatus");
-      st.textContent = "Telegram didn't send it. Close this, type /connect in the KalBot chat, and open the form from the 🔐 Connect Kalshi button.";
-      st.className = "status bad";
+      ss.textContent = "Telegram didn't send it. Close this, type /connect in the KalBot chat, and open the form from the 🔐 Connect Kalshi button there.";
+      ss.className = "status bad";
     }, 1500);
   }
 
@@ -210,7 +218,7 @@ button.b:active { transform: scale(0.98); }
     const url = "https://kalshi.com/account/profile";                    // Kalshi docs: Profile Settings → API Keys
     if (tg && tg.openLink) tg.openLink(url); else window.open(url, "_blank", "noopener");
   });
-  $("fallback").addEventListener("click", send);
+  $("connectBtn").addEventListener("click", send);
   if (tg && tg.MainButton) tg.MainButton.onClick(send);
   update();
 })();
