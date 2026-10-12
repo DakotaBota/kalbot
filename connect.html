@@ -1,0 +1,175 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>Connect Kalshi · KalBot</title>
+<meta name="robots" content="noindex">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+/* Phone-first form inside Telegram. Follows the user's Telegram theme; KalBot neon only for accents.
+   This page talks to nobody: the key goes to the KalBot chat through Telegram (WebApp.sendData). */
+:root {
+  --bg: var(--tg-theme-bg-color, #050806);
+  --card: var(--tg-theme-secondary-bg-color, #0b140d);
+  --text: var(--tg-theme-text-color, #e9f3ea);
+  --muted: var(--tg-theme-hint-color, #8fa894);
+  --line: color-mix(in srgb, var(--muted) 30%, transparent);
+  --neon: #39ff14;
+  --ok: #1fbf4a;
+  --bad: #ff5a5f;
+  --mono: ui-monospace, "SFMono-Regular", Menlo, Consolas, monospace;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--bg); color: var(--text); font: 16px/1.5 -apple-system, "Segoe UI", Roboto, system-ui, sans-serif;
+  padding: 16px 16px 96px; }
+h1 { font-size: 22px; margin: 4px 0 2px; }
+.sub { color: var(--muted); margin: 0 0 16px; font-size: 14px; }
+.card { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 14px; margin-bottom: 14px; }
+.step { display: flex; gap: 10px; align-items: baseline; font-weight: 600; margin-bottom: 8px; }
+.num { flex: none; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; font-size: 13px;
+  background: var(--neon); color: #050806; }
+p.help { color: var(--muted); font-size: 14px; margin: 0 0 10px; }
+input[type=text], textarea { width: 100%; font: 15px/1.4 var(--mono); color: var(--text); background: var(--bg);
+  border: 1px solid var(--line); border-radius: 10px; padding: 12px; outline: none; }
+input[type=text]:focus, textarea:focus { border-color: var(--neon); }
+textarea { min-height: 120px; resize: vertical; font-size: 12px; }
+.row { display: flex; gap: 8px; margin-top: 8px; flex-wrap: wrap; }
+button.b { flex: 1 1 auto; min-height: 46px; border-radius: 10px; border: 1px solid var(--line); background: var(--bg);
+  color: var(--text); font: 600 15px/1 inherit; font-family: inherit; padding: 0 14px; }
+button.b.primary { background: var(--neon); color: #050806; border-color: var(--neon); }
+button.b:active { transform: scale(0.98); }
+.status { font-size: 14px; margin-top: 8px; min-height: 21px; }
+.status.ok { color: var(--ok); } .status.bad { color: var(--bad); }
+.note { color: var(--muted); font-size: 13px; }
+#fallback { display: none; position: fixed; left: 16px; right: 16px; bottom: 16px; min-height: 52px; font-size: 16px; }
+#outside { display: none; }
+</style>
+</head>
+<body>
+<h1>🔐 Connect Kalshi</h1>
+<p class="sub">Link your own Kalshi account to KalBot. Use a key made just for KalBot so you can revoke it any time.</p>
+
+<div id="outside" class="card"><b>Open this from Telegram.</b><p class="help">In the KalBot chat, type /connect and tap “🔐 Connect Kalshi”.</p></div>
+
+<div class="card">
+  <div class="step"><span class="num">1</span><span>Create an API key on Kalshi</span></div>
+  <p class="help">On kalshi.com: Account → API keys → Create key. Kalshi shows a <b>Key ID</b> and gives you a <b>private key</b> file (it lands in your Downloads / Files).</p>
+  <div class="row"><button class="b" id="openKalshi" type="button">Open kalshi.com ↗</button></div>
+</div>
+
+<div class="card">
+  <div class="step"><span class="num">2</span><span>Key ID</span></div>
+  <input type="text" id="kid" placeholder="e.g. a1b2c3d4-…" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false" inputmode="text">
+  <div class="row"><button class="b" id="pasteKid" type="button">📋 Paste</button></div>
+  <div class="status" id="kidStatus"></div>
+</div>
+
+<div class="card">
+  <div class="step"><span class="num">3</span><span>Private key</span></div>
+  <p class="help">Pick the key file, or paste the whole key text.</p>
+  <div class="row">
+    <button class="b primary" id="pickFile" type="button">📁 Choose key file</button>
+    <button class="b" id="pasteKey" type="button">📋 Paste</button>
+  </div>
+  <input type="file" id="file" hidden>
+  <textarea id="key" placeholder="-----BEGIN RSA PRIVATE KEY-----&#10;…&#10;-----END RSA PRIVATE KEY-----" autocomplete="off" autocapitalize="off" autocorrect="off" spellcheck="false"></textarea>
+  <div class="status" id="keyStatus"></div>
+</div>
+
+<p class="note">Your key goes straight to the KalBot chat through Telegram, where it is checked with Kalshi and stored encrypted. It never appears in the chat, and this page saves nothing.</p>
+
+<button class="b primary" id="fallback" type="button">Connect securely</button>
+
+<script>
+(function () {
+  const tg = window.Telegram && window.Telegram.WebApp;
+  const inTelegram = !!(tg && tg.initData);
+  const $ = (id) => document.getElementById(id);
+  let parsed = null;                                  // {t: label, p: base64 body}
+
+  if (tg) { try { tg.ready(); tg.expand(); } catch (e) {} }
+  if (!inTelegram) $("outside").style.display = "block";
+
+  // Same repair as the bot: tolerate smart dashes, lost line breaks, spaces.
+  function parseKey(text) {
+    const m = /BEGIN ((?:RSA |EC |ENCRYPTED )?PRIVATE KEY)/.exec(text);
+    const e = /END (?:RSA |EC |ENCRYPTED )?PRIVATE KEY/.exec(text);
+    if (!m) return { err: "No private key found. It should start with BEGIN … PRIVATE KEY." };
+    if (!e || e.index <= m.index) return { err: "The key looks cut off (no END line). Pick the file, or paste all of it." };
+    if (m[1].startsWith("ENCRYPTED")) return { err: "This key is password-protected. Create a new key on Kalshi." };
+    const body = text.slice(m.index + m[0].length, e.index).replace(/[^A-Za-z0-9+/=]/g, "");
+    if (body.length < 800) return { err: "The key looks cut off. Pick the file, or paste all of it." };
+    return { t: m[1], p: body.match(/.{1,64}/g).join("\n") };
+  }
+
+  function validKid(v) { return v.length >= 8 && v.length <= 100 && !/\s/.test(v); }
+
+  function update() {
+    const kid = $("kid").value.trim();
+    const ks = $("kidStatus");
+    if (!kid) { ks.textContent = ""; ks.className = "status"; }
+    else if (validKid(kid)) { ks.textContent = "✓ Key ID looks right"; ks.className = "status ok"; }
+    else { ks.textContent = "That doesn't look like a Key ID (no spaces)."; ks.className = "status bad"; }
+
+    const raw = $("key").value;
+    const st = $("keyStatus");
+    parsed = null;
+    if (!raw.trim()) { st.textContent = ""; st.className = "status"; }
+    else {
+      const r = parseKey(raw);
+      if (r.err) { st.textContent = r.err; st.className = "status bad"; }
+      else { parsed = r; st.textContent = "✓ Private key looks complete"; st.className = "status ok"; }
+    }
+    const ready = validKid(kid) && parsed && inTelegram;
+    if (tg && tg.MainButton) {
+      tg.MainButton.setText("Connect securely");
+      if (ready) { tg.MainButton.show(); tg.MainButton.enable(); } else { tg.MainButton.hide(); }
+    }
+    $("fallback").style.display = ready && !(tg && tg.MainButton && tg.MainButton.isVisible) ? "block" : "none";
+  }
+
+  function send() {
+    const kid = $("kid").value.trim();
+    if (!validKid(kid) || !parsed || !inTelegram) return;
+    const data = JSON.stringify({ k: kid, p: parsed.p, t: parsed.t });
+    if (new Blob([data]).size > 4096) {
+      $("keyStatus").textContent = "This key is too large to send from here. Send the key file in the chat instead.";
+      $("keyStatus").className = "status bad";
+      return;
+    }
+    tg.sendData(data);                                // closes the form; the bot replies in the chat
+  }
+
+  async function pasteInto(id) {
+    try {
+      const v = await navigator.clipboard.readText();
+      if (v) { $(id).value = v.trim(); update(); return; }
+    } catch (e) {}
+    $(id).focus();                                    // clipboard blocked: let the user long-press → Paste
+  }
+
+  $("kid").addEventListener("input", update);
+  $("key").addEventListener("input", update);
+  $("pasteKid").addEventListener("click", () => pasteInto("kid"));
+  $("pasteKey").addEventListener("click", () => pasteInto("key"));
+  $("pickFile").addEventListener("click", () => $("file").click());
+  $("file").addEventListener("change", () => {
+    const f = $("file").files && $("file").files[0];
+    if (!f) return;
+    if (f.size > 20000) { $("keyStatus").textContent = "That file is too big to be a key."; $("keyStatus").className = "status bad"; return; }
+    const r = new FileReader();
+    r.onload = () => { $("key").value = String(r.result || ""); update(); };
+    r.readAsText(f);
+  });
+  $("openKalshi").addEventListener("click", () => {
+    const url = "https://kalshi.com/account/profile";
+    if (tg && tg.openLink) tg.openLink(url); else window.open(url, "_blank", "noopener");
+  });
+  $("fallback").addEventListener("click", send);
+  if (tg && tg.MainButton) tg.MainButton.onClick(send);
+  update();
+})();
+</script>
+</body>
+</html>
