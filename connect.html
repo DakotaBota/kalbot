@@ -99,7 +99,7 @@ button.b:active { transform: scale(0.98); }
     if (!e || e.index <= m.index) return { err: "The key looks cut off (no END line). Pick the file, or paste all of it." };
     if (m[1].startsWith("ENCRYPTED")) return { err: "This key is password-protected. Create a new key on Kalshi." };
     const body = text.slice(m.index + m[0].length, e.index).replace(/[^A-Za-z0-9+/=]/g, "");
-    if (body.length < 800) return { err: "The key looks cut off. Pick the file, or paste all of it." };
+    if (body.length < 40) return { err: "The key looks cut off. Pick the file, or paste all of it." };   // Ed25519 = 64 chars, RSA ~1600
     return { t: m[1], p: body.match(/.{1,64}/g).join("\n") };
   }
 
