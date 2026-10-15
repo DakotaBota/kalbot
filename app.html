@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://telegram.org/js/telegram-web-app.js; connect-src 'self'; img-src 'self' data:; style-src 'self' 'unsafe-inline'; object-src 'none'; base-uri 'self'; form-action 'self'">
+<meta name="theme-color" content="#0c0a08">
+<meta name="robots" content="noindex">
+<title>KalBot</title>
+<link rel="icon" href="kalbot-icon.svg">
+<link rel="stylesheet" href="app.css?v=1">
+<script src="https://telegram.org/js/telegram-web-app.js?64"></script>
+</head>
+<body>
+<!-- Every button sends a KalBot command to the bot through Telegram.WebApp.sendData; the bot runs it
+     exactly as if it were typed and replies in the chat. This page holds no account data or keys. -->
+<div class="app">
+  <p class="outside" id="outside" hidden>Open this page from the <b>Open KalBot</b> button in the KalBot chat. In a regular browser the buttons are turned off.</p>
+
+  <!-- TRADE -->
+  <section class="view" id="view-trade" data-view="trade">
+    <header class="head">
+      <h1>Trade</h1>
+      <p>15-minute crypto and live tools. Results open in the chat.</p>
+    </header>
+
+    <div class="card coin-card">
+      <div class="seg" role="tablist" aria-label="Coin" id="coin-seg"></div>
+      <button class="cta" data-cmd-template="/trade {coin}" id="trade-cta">Trade BTC 15-min</button>
+      <div class="pair">
+        <button class="btn" data-cmd-template="/burst {coin}">⚡ Limit burst</button>
+        <button class="btn" data-cmd-template="/shot {coin}" data-coins="BTC ETH SOL XRP">🎯 15 Shot bots</button>
+      </div>
+    </div>
+
+    <h2 class="sub">Your account</h2>
+    <div class="stats">
+      <button class="stat" data-cmd="/positions"><span class="stat-ico">💼</span>Positions</button>
+      <button class="stat" data-cmd="/orders"><span class="stat-ico">🧾</span>Orders</button>
+      <button class="stat" data-cmd="/board"><span class="stat-ico">📊</span>Prices</button>
+    </div>
+
+    <h2 class="sub">Sports picks</h2>
+    <ul class="list">
+      <li class="row"><span class="ico">🏆</span><span class="txt"><b>Top picks</b><small>Best prices vs sportsbooks</small></span><button class="go" data-cmd="/picks">Open</button></li>
+      <li class="row"><span class="ico">🔥</span><span class="txt"><b>Combos</b><small>2 to 12 leg parlays</small></span><button class="go" data-cmd="/combos">Open</button></li>
+    </ul>
+
+    <button class="stop" data-sheet="sellall">🛑 Sell all</button>
+  </section>
+
+  <!-- SPORTS -->
+  <section class="view" id="view-sports" data-view="sports" hidden>
+    <header class="head">
+      <h1>Sports</h1>
+      <p>Find a game, follow live tennis, or check edges.</p>
+    </header>
+    <div class="seg wide" role="tablist" aria-label="Sports section">
+      <button class="on" data-pane="games">Games</button>
+      <button data-pane="live">Live</button>
+      <button data-pane="edges">Edges</button>
+    </div>
+    <ul class="list pane" data-pane-body="games">
+      <li class="row"><span class="ico">🏈</span><span class="txt"><b>NFL</b><small>Games and prices</small></span><button class="go" data-cmd="/games nfl">Open</button></li>
+      <li class="row"><span class="ico">🎓</span><span class="txt"><b>College football</b><small>Games and prices</small></span><button class="go" data-cmd="/games ncaaf">Open</button></li>
+      <li class="row"><span class="ico">🥊</span><span class="txt"><b>UFC</b><small>Fights and prices</small></span><button class="go" data-cmd="/games ufc">Open</button></li>
+      <li class="row"><span class="ico">🎾</span><span class="txt"><b>Tennis</b><small>Matches and prices</small></span><button class="go" data-cmd="/games tennis">Open</button></li>
+      <li class="row"><span class="ico">🏏</span><span class="txt"><b>Cricket</b><small>Matches and prices</small></span><button class="go" data-cmd="/games cricket">Open</button></li>
+      <li class="row"><span class="ico">🎯</span><span class="txt"><b>Long shots</b><small>Cheap sides across sports</small></span><button class="go" data-cmd="/longshots all">Open</button></li>
+    </ul>
+    <ul class="list pane" data-pane-body="live" hidden>
+      <li class="row"><span class="ico">🔴</span><span class="txt"><b>Live tennis</b><small>Scores and player stats</small></span><button class="go" data-cmd="/live">Open</button></li>
+      <li class="row"><span class="ico">🔔</span><span class="txt"><b>Following</b><small>Matches you get updates for</small></span><button class="go" data-cmd="/follow">Open</button></li>
+      <li class="row"><span class="ico">🗂️</span><span class="txt"><b>Draws</b><small>Tournament brackets</small></span><button class="go" data-cmd="/draw">Open</button></li>
+    </ul>
+    <ul class="list pane" data-pane-body="edges" hidden>
+      <li class="row"><span class="ico">📈</span><span class="txt"><b>NFL edges</b><small>Kalshi vs sportsbook odds</small></span><button class="go" data-cmd="/edges nfl">Open</button></li>
+      <li class="row"><span class="ico">📈</span><span class="txt"><b>UFC edges</b><small>Kalshi vs sportsbook odds</small></span><button class="go" data-cmd="/edges ufc">Open</button></li>
+      <li class="row"><span class="ico">📈</span><span class="txt"><b>Tennis edges</b><small>Kalshi vs sportsbook odds</small></span><button class="go" data-cmd="/edges tennis">Open</button></li>
+    </ul>
+    <button class="stop" data-sheet="sellall">🛑 Sell all</button>
+  </section>
+
+  <!-- BOTS -->
+  <section class="view" id="view-bots" data-view="bots" hidden>
+    <header class="head">
+      <h1>Bots</h1>
+      <p>Automation you review and arm. Stop any of them from here.</p>
+    </header>
+    <ul class="list">
+      <li class="row"><span class="ico">⚡</span><span class="txt"><b>Limit burst</b><small>1 to 8 timed limit orders</small></span><button class="go" data-cmd="/burst BTC">Set up</button></li>
+      <li class="row"><span class="ico">⏱</span><span class="txt"><b>Burst status</b><small>Progress, stop or check outcome</small></span><button class="go ghost" data-cmd="/burst status">Status</button></li>
+      <li class="row"><span class="ico">🎯</span><span class="txt"><b>15 Shot bots</b><small>15 Up or Down bots, one stake</small></span><button class="go" data-cmd="/shot BTC">Set up</button></li>
+      <li class="row"><span class="ico">⏱</span><span class="txt"><b>Shot status</b><small>Every bot's attempts and fills</small></span><button class="go ghost" data-cmd="/shot status">Status</button></li>
+      <li class="row"><span class="ico">🤖</span><span class="txt"><b>Market makers</b><small>Quote both sides of a market</small></span><button class="go" data-cmd="/mm list">Open</button></li>
+      <li class="row"><span class="ico">🔒</span><span class="txt"><b>Profit exits</b><small>Automatic take-profit sells</small></span><button class="go" data-cmd="/lock">Open</button></li>
+      <li class="row"><span class="ico">🔔</span><span class="txt"><b>Alerts</b><small>New price edges sent to you</small></span><button class="go" data-cmd="/alerts">Open</button></li>
+    </ul>
+    <button class="stop" data-sheet="sellall">🛑 Sell all</button>
+  </section>
+
+  <!-- ACCOUNT -->
+  <section class="view" id="view-account" data-view="account" hidden>
+    <header class="head">
+      <h1>Account</h1>
+      <p>Balance, limits and help.</p>
+    </header>
+    <div class="stats">
+      <button class="stat" data-cmd="/balance"><span class="stat-ico">💰</span>Balance</button>
+      <button class="stat" data-cmd="/plan"><span class="stat-ico">⭐</span>Plan</button>
+      <button class="stat" data-cmd="/caps"><span class="stat-ico">🛡️</span>Caps</button>
+    </div>
+    <ul class="list">
+      <li class="row"><span class="ico">🔑</span><span class="txt"><b>Connect Kalshi</b><small>Link your Kalshi API key</small></span><button class="go" data-cmd="/connect">Connect</button></li>
+      <li class="row"><span class="ico">🟢</span><span class="txt"><b>Classic console</b><small>The tabbed console in the chat</small></span><button class="go ghost" data-cmd="/menu">Open</button></li>
+      <li class="row"><span class="ico">❓</span><span class="txt"><b>Help</b><small>Every command</small></span><button class="go ghost" data-cmd="/help">Open</button></li>
+      <li class="row"><span class="ico">📜</span><span class="txt"><b>Terms</b><small>Service terms</small></span><button class="go ghost" data-cmd="/terms">Open</button></li>
+    </ul>
+    <button class="stop" data-sheet="sellall">🛑 Sell all</button>
+  </section>
+
+  <nav class="tabs" aria-label="Sections">
+    <button class="tab on" data-tab="trade"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V9m6 10V5m6 14v-7m4 7H2" /></svg>Trade</button>
+    <button class="tab" data-tab="sports"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 3v18M3 12h18M5.6 5.6c3 3 3 9.8 0 12.8m12.8-12.8c-3 3-3 9.8 0 12.8" /></svg>Sports</button>
+    <button class="tab" data-tab="bots"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="8" width="16" height="12" rx="3" /><path d="M12 8V4m-3 9h.01M15 13h.01M9 17h6" /></svg>Bots</button>
+    <button class="tab" data-tab="account"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" /><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6" /></svg>Account</button>
+  </nav>
+</div>
+
+<!-- Sell all sheet: the second tap sells immediately, as in the chat panel. -->
+<div class="sheet" id="sheet-sellall" hidden>
+  <div class="sheet-body" role="dialog" aria-modal="true" aria-labelledby="sellall-title">
+    <h2 id="sellall-title">Sell all</h2>
+    <p>Cancels your resting orders in that category and sells what you hold there at the bid, never more than 5¢ below it. <b>One tap sells immediately.</b></p>
+    <div class="grid" id="sellall-grid"></div>
+    <button class="stop solid" data-cmd="/sellall all">🛑 Everything: all markets and stop KalBot's bots</button>
+    <button class="btn" data-close>Cancel</button>
+  </div>
+</div>
+
+<script src="app.js?v=1"></script>
+</body>
+</html>
