@@ -8,7 +8,7 @@
 <meta name="robots" content="noindex">
 <title>KalBot</title>
 <link rel="icon" href="kalbot-icon.svg">
-<link rel="stylesheet" href="app.css?v=1">
+<link rel="stylesheet" href="app.css?v=4">
 <script src="https://telegram.org/js/telegram-web-app.js?64"></script>
 </head>
 <body>
@@ -81,6 +81,20 @@
     <button class="stop" data-sheet="sellall">🛑 Sell all</button>
   </section>
 
+  <!-- PRESETS BOTS -->
+  <section class="view" id="view-presets" data-view="presets" hidden>
+    <header class="head"><h1>Presets Bots</h1><p>Five maker-only strategies for BTC and ETH, 15 min or 1 hour. Review and start in the chat.</p></header>
+    <ul class="list">
+      <li class="row"><span class="ico">🤖</span><span class="txt"><b>Balanced Ladder</b><small>Three nearby levels</small></span><button class="go" data-cmd="/presets balanced">Set up</button></li>
+      <li class="row"><span class="ico">🤖</span><span class="txt"><b>Patient Wide</b><small>Two wider levels</small></span><button class="go" data-cmd="/presets patient">Set up</button></li>
+      <li class="row"><span class="ico">🤖</span><span class="txt"><b>Inventory Light</b><small>Smaller inventory, stronger skew</small></span><button class="go" data-cmd="/presets inventory">Set up</button></li>
+      <li class="row"><span class="ico">🤖</span><span class="txt"><b>Wide Ladder</b><small>Four spaced levels within your cap</small></span><button class="go" data-cmd="/presets deep">Set up</button></li>
+      <li class="row"><span class="ico">🤖</span><span class="txt"><b>Single Quote</b><small>One quote per side</small></span><button class="go" data-cmd="/presets single">Set up</button></li>
+      <li class="row"><span class="ico">⚙️</span><span class="txt"><b>All presets</b><small>Markets, settings and exposure ceiling</small></span><button class="go" data-cmd="/presets">Open</button></li>
+    </ul>
+    <p>Saved stopped. Post-only orders; stops cancel quotes and leave residual positions held. These settings are not a proven profit edge.</p>
+  </section>
+
   <!-- BOTS -->
   <section class="view" id="view-bots" data-view="bots" hidden>
     <header class="head">
@@ -122,6 +136,7 @@
   <nav class="tabs" aria-label="Sections">
     <button class="tab on" data-tab="trade"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 19V9m6 10V5m6 14v-7m4 7H2" /></svg>Trade</button>
     <button class="tab" data-tab="sports"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" /><path d="M12 3v18M3 12h18M5.6 5.6c3 3 3 9.8 0 12.8m12.8-12.8c-3 3-3 9.8 0 12.8" /></svg>Sports</button>
+    <button class="tab" data-tab="presets"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16M8 3v6M16 9v6M8 15v6" /></svg>Presets Bots</button>
     <button class="tab" data-tab="bots"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="8" width="16" height="12" rx="3" /><path d="M12 8V4m-3 9h.01M15 13h.01M9 17h6" /></svg>Bots</button>
     <button class="tab" data-tab="account"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4" /><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6" /></svg>Account</button>
   </nav>
@@ -138,6 +153,6 @@
   </div>
 </div>
 
-<script src="app.js?v=1"></script>
+<script src="app.js?v=4"></script>
 </body>
 </html>
